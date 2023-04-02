@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "rocketseat-ignite-my-shopping-rn-firebase",
+    "slug": "rocketseat-ignite-my-shopping-rn-firebase",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "rocketseat-ignite-my-shopping-rn-firebase"
+}
