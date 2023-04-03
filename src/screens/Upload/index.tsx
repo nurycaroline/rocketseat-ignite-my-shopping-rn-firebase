@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import storage from '@react-native-firebase/storage';
 
 import { Button } from '../../components/Button';
 import { Header } from '../../components/Header';
@@ -9,6 +10,9 @@ import { Container, Content, Progress, Transferred } from './styles';
 
 export function Upload() {
   const [image, setImage] = useState('');
+  const [progress, setProgress] = useState('0');
+  const [bytesTransferred, setBytesTransferred] = useState('');
+  
 
   async function handlePickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -21,29 +25,54 @@ export function Upload() {
       });
 
       if (!result.cancelled) {
-        setImage(result.uri);
+        setImage(result.assets[0].uri);
       }
     }
   };
 
+  async function handleUpload() {
+    const filename = new Date().getTime();
+    const MIME = image.match(/\.(?:.(?!\.))+$/);
+    const reference = storage().ref(`/images/${filename}${MIME}`);
+
+    // reference.putFile(image)
+    //   .then(() => {
+    //     console.log('Arquivo enviado com sucesso!');
+    //   })
+    //   .catch((error) => console.log(error));
+
+    const uploadTask = reference.putFile(image);
+    uploadTask.on('state_changed', (taskSnapshot) => {
+      const percentage = (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100;
+      setProgress(percentage.toFixed(0));
+      setBytesTransferred(`${taskSnapshot.bytesTransferred}b transferidos de ${taskSnapshot.totalBytes}b`);
+    });
+
+    uploadTask.then(() => {
+      console.log('Arquivo enviado com sucesso!');
+    })
+      .catch((error) => console.log(error));
+  }
+
+
   return (
     <Container>
-      <Header title="Lista de compras" />
+      <Header title="Upload de Fotos" />
 
       <Content>
         <Photo uri={image} onPress={handlePickImage} />
 
         <Button
           title="Fazer upload"
-          onPress={() => { }}
+          onPress={handleUpload}
         />
 
         <Progress>
-          0%
+          {progress}%
         </Progress>
 
         <Transferred>
-          0 de 100 bytes transferido
+          {bytesTransferred}
         </Transferred>
       </Content>
     </Container>
